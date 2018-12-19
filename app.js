@@ -13,13 +13,12 @@ class App {
     }
 
     // 设置采集的分类
-    setType(typeId){
+    async setType(typeId) {
         this.getUrl = this.baseUrl + '/vod-type-id-'+typeId+'.html'
-        this.getHtml()
     }
 
     // 获取html内容
-    getHtml() {
+    async run() {
         const _this = this
         http.get(this.getUrl, function (res) {
             // 获取页面数据
@@ -37,7 +36,7 @@ class App {
     }
 
     // 获取此分类的总页数
-    getLastPage(){
+    async getLastPage() {
         const _this = this
         const $ = cheerio.load(this.html)
         this.$ = $
@@ -52,11 +51,12 @@ class App {
     }
 
     // 获取列表内容
-    getList(){
+    async getList() {
         const _this = this
         this.lastPage = 1
         for (let index = 1; index <= this.lastPage; index++) {
             let urls = this.baseUrl+'/vod-type-id-2-pg-'+index+'.html'
+            // _this.html = ''
             // 请求
             http.get(urls, function (res) {
                 // 获取页面数据
@@ -74,7 +74,7 @@ class App {
     }
 
     // 过滤列表
-    filterList(){
+    async filterList() {
         const $ = this.$;
         const _this = this
         let html = $("#vod_list").find("li");
@@ -87,22 +87,22 @@ class App {
                 score: _self.find('.picsize').find('.score').text(),
                 status: _self.find('.picsize').find('.status').text(),
                 news: _self.find('.picsize').find('.title').text(),
-                act: _self.find('p').text()
+                star: _self.find('p').text() 
             }
-            console.log(temp );
+            // console.log(temp );
             // 获取详情内容
-            // _this.getDetail(temp)
+            _this.getDetail(temp)
 
         });
     }
 
     // 获取详情
-    getDetail(data){
-
+    async getDetail(temp) {
         const _this = this
-        this.detail = ''
+
         // 请求
-        http.get(data.href, function (res) {
+        http.get(temp.href, function (res) {
+            _this.detail = ''
             // 获取页面数据
             res.on('data', function (data) {
                 _this.detail += data
@@ -110,7 +110,7 @@ class App {
             // 数据获取结束
             res.on('end', function () {
                 let $ = cheerio.load(_this.detail)
-                _this._detail(_this.detail, $)
+                _this._detail(_this.detail, $, temp)
             });
         }).on('error', function () {
             console.log('获取数据出错！')
@@ -120,14 +120,45 @@ class App {
     }
 
     // 解析
-    _detail(html,$){
+    async _detail(html, $, temp) {
         let intro = $('#resize_vod').find('.vod-n-l')
-        console.log(intro.html());
+        console.log(temp)
+        let ree = intro.find('.vw100').eq(1)
+        // console.log(ree.text())
+        console.log(ree.find('a').text() )
+        console.log('---------------------------\n\n')
+    }
+
+    // 连接数据库
+    async _mysql() {
+        const knex = require('knex')({
+            client: 'mysql',
+            connection: {
+                host: '127.0.0.1',
+                user: 'root',
+                password: 'root',
+                database: 'knex'
+            },
+            pool: {
+                min: 0,
+                max: 7
+            }
+        });
+
+        await knex('main').returning('id').insert({
+            title: 'Slaughterhouse'
+        })
+
+        let res = await knex.select().from('main').timeout(1000, {
+            cancel: true
+        })
+
+        console.log(res)
     }
 
 }
 
 const app = new App('http://m.aaqqc.com')
 app.setType(2)
-
-// module.exports.App = App;
+app.run()
+// app._mysql()
