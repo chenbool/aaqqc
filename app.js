@@ -89,9 +89,9 @@ class App {
                 news: _self.find('.picsize').find('.title').text(),
                 star: _self.find('p').text() 
             }
-            // console.log(temp );
+            console.log(temp );
             // 获取详情内容
-            _this.getDetail(temp)
+            // _this.getDetail(temp)
 
         });
     }
@@ -125,7 +125,7 @@ class App {
         console.log(temp)
         let ree = intro.find('.vw100').eq(1)
         // console.log(ree.text())
-        console.log(ree.find('a').text() )
+        console.log(ree.text() )
         console.log('---------------------------\n\n')
     }
 
