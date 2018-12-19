@@ -41,11 +41,13 @@ class App {
         const _this = this
         const $ = cheerio.load(this.html)
         this.$ = $
-
-        $(".ui-vpages").find(".pagelink_a").each(function (v) {
-            _this.lastPage = $(this).attr('href').split('-')[5].replace(/.html/g, "")
-        })
-        console.log(_this.lastPage)
+        // 只有page小于等于0才执行
+        if (this.lastPage <= 0){
+            $(".ui-vpages").find(".pagelink_a").each(function (v) {
+                _this.lastPage = $(this).attr('href').split('-')[5].replace(/.html/g, "")
+            })
+        }
+        // console.log(_this.lastPage)
         this.getList()
     }
 
